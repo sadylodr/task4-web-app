@@ -9,7 +9,7 @@ var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 var connectionString = HerokuConnectionHelper.ConvertHerokuConnectionString(databaseUrl);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AppDbContext")));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
