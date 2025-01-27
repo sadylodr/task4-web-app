@@ -1,24 +1,50 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Task4.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("AppDbContext")));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Events.OnRedirectToLogin = context =>
+        {
+            if (context.HttpContext.Items.ContainsKey("BlockedMessage")) 
+            {
+                context.Response.Redirect("/Account/Register");
+                return Task.CompletedTask;
+            }
+
+            return Task.CompletedTask;
+        };
+    });
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
+if (app.Environment.IsDevelopment()) {
+    app.UseDeveloperExceptionPage();
+}
+else {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<UserValidationMiddleware>();
+
 
 app.MapControllerRoute(
     name: "default",

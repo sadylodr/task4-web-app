@@ -1,0 +1,58 @@
+﻿@using Humanizer
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model List<User>
+
+<div class="container mt-5">
+	<h2>Control panel</h2>
+	<form method="post">
+		<table class="table table-striped">
+			<thead>
+			<tr>
+				<th>
+					<input type="checkbox" id="selectAll" />
+				</th>
+				<th>Name</th>
+				<th>Email</th>
+				<th>Last seen</th>
+				<th>Status</th>
+			</tr>
+			</thead>
+			<tbody>
+			@foreach (var user in Model)
+			{
+				<tr>
+					<td>
+						<input type="checkbox" name="ids" value="@user.Id" />
+					</td>
+					<td>@user.Name</td>
+					<td>@user.Email</td>
+					<td>
+						@if (user.LastLoginTime.HasValue)
+						{
+							@user.LastLoginTime.Value.ToLocalTime().Humanize(false)
+						}
+						else
+						{
+							<span class="text-muted">Never</span>
+						}
+					</td>
+					<td>@(user.IsBlocked ? "Blocked" : "Active")</td>
+				</tr>
+			}
+			</tbody>
+		</table>
+
+		<div class="toolbar mt-3">
+			<button type="submit" formaction="/Admin/Block" class="btn btn-warning">Block</button>
+			<button type="submit" formaction="/Admin/Unblock" class="btn btn-success">Unblock</button>
+			<button type="submit" formaction="/Admin/Delete" class="btn btn-danger">Delete</button>
+		</div>
+	</form>
+</div>
+
+<script>
+    document.getElementById('selectAll').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('input[name="ids"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+</script>
