@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Task4.Data;
+using Task4.Models;
 
 namespace Task4.Controllers
 {
@@ -17,11 +18,11 @@ namespace Task4.Controllers
 
         public async Task<IActionResult> Index(string sortOrder)
         {
-            var users = await _context.Users
-                .Where(u => !u.IsBlocked)
-                .OrderByDescending(u => u.LastLoginTime)
-                .ToListAsync();
+            IQueryable<User> usersQuery = _context.Users;
 
+            usersQuery = usersQuery.OrderByDescending(u => u.LastLoginTime ?? DateTime.MinValue);
+
+            var users = await usersQuery.ToListAsync();
             return View(users);
         }
 
